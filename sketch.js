@@ -75,8 +75,8 @@ function Paddle(x) {
 	}
 
 	this.checkHitBox = function(x, y) {
-		if (((x - BALL_DIAM / 2) <= PADDLE_WIDTH || (x + BALL_DIAM / 2) >= width - PADDLE_WIDTH) 
-				&& ((y - BALL_DIAM / 2) >= this.yPos && (y + BALL_DIAM / 2) <= (this.yPos + PADDLE_LENGTH))) {
+		if (((x <= PADDLE_WIDTH) || (x >= width - PADDLE_WIDTH)) 
+				&& ((y >= this.yPos) && (y <= (this.yPos + PADDLE_LENGTH)))) {
 			return true;
 		} else {
 			return false;
@@ -108,10 +108,9 @@ function Ball() {
 	
 	this.checkCollisions = function() {
 		//use center of ball
-		if (usrPad.checkHitBox((this.xPos + (BALL_DIAM / 2), (this.yPos + BALL_DIAM / 2))) 
-			|| compPad.checkHitBox((this.xPos + (BALL_DIAM / 2)), (this.yPos + BALL_DIAM / 2))) {	//bounce off paddle
+		if (usrPad.checkHitBox(this.xPos, (this.yPos + BALL_DIAM / 2)) 
+			|| compPad.checkHitBox((this.xPos + BALL_DIAM), (this.yPos + BALL_DIAM / 2))) {	//bounce off paddle
 			this.xSpeed *= -1;
-			//this.ySpeed *= -1;
 		} else if ((this.yPos == 0) || (this.yPos == height - BALL_DIAM)) {	//bounce off top or bottom walls
 			this.ySpeed *= -1;
 		} else if (this.xPos == 0) {	//comp scores
