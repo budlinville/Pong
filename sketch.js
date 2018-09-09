@@ -1,6 +1,7 @@
-const CANVAS_SIZE = 400;
-const PADDLE_LENGTH = 60;
-const PADDLE_WIDTH = 10;
+const CANVAS_WIDTH = screen.width * 2 / 3;
+const CANVAS_HEIGHT = screen.height * 2 / 3;
+const PADDLE_LENGTH = CANVAS_HEIGHT / 6;
+const PADDLE_WIDTH = PADDLE_LENGTH / 7;
 const BALL_DIAM = 15;
 var usrPad;
 var compPad;
@@ -13,12 +14,21 @@ var runGame = false;
 //		add UI
 function setup() {
 	createDiv(" \
-		<input type='button' value='Start' onclick='startGame();' /> \
-		<input type='button' value='Pause' onclick='pauseGame();' /> \
+		<div id='topper'> \
+			<input type='button' value='Start' onclick='startGame();' /> \
+			<input type='button' value='Pause' onclick='pauseGame();' /> \
+			<h3 id='usr'>User: 0</h3> \
+			<h3 id='comp'>Computer: 0</h3> \
+		</div> \
 	");
-	createCanvas(CANVAS_SIZE, CANVAS_SIZE);
+	var cnv = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+	var x = (windowWidth - width) / 2;
+	var y = (windowHeight - height) / 2;
+	cnv.position(x, y);
+	background(255, 0, 200);
+	
 	usrPad = new Paddle(0);
-	compPad = new Paddle(CANVAS_SIZE - PADDLE_WIDTH);
+	compPad = new Paddle(CANVAS_WIDTH - PADDLE_WIDTH);
 	ai = new Computer(compPad);
 	ball = new Ball();
 }
@@ -26,6 +36,8 @@ function setup() {
 function draw() {
 	if (runGame) {
 		background(51);	//make dark grey
+		line(CANVAS_WIDTH / 2, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT); //draw halfway line
+	
 		usrPad.update();
 		ai.update();
 		ball.update();
@@ -54,6 +66,12 @@ function keyPressed() {
 		usrPad.changeSpeed(-10);
 	} else if (keyCode === DOWN_ARROW) {
 		usrPad.changeSpeed(10);
+	} else if (keyCode === 32) {
+		if (runGame) {
+			pauseGame()
+		} else {
+			startGame();
+		}
 	}
 }
 
@@ -62,13 +80,19 @@ function keyReleased() {
 }
 
 function resetScreen() {
-	setup();	//TODO: not resetScreen everything
+	ball = new Ball();
+}
+
+function updateScores() {
+	document.getElementById('usr').innerHTML = "User: " + usrPad.score;
+	document.getElementById('comp').innerHTML = "Computer: " + compPad.score;
 }
 
 function Paddle(x) {
 	this.xPos = x;
 	this.yPos = 0;
 	this.speed = 0;
+	this.score = 0;
 
 	this.changeSpeed = function(val) {
 		this.speed = val;
@@ -99,7 +123,6 @@ function Ball() {
 	this.yPos = height/2;
 	this.xSpeed = 3;
 	this.ySpeed = 3;
-	this.score = 0;
 	
 	this.changeSpeed = function(xVal, yVal) {
 		this.xSpeed = xVal;
@@ -117,12 +140,12 @@ function Ball() {
 			compPad.score++;
 			console.log(compPad.score);
 			resetScreen();
-			console.log("c");
+			updateScores();
 		} else if (this.xPos == width) {	//player scores
 			usrPad.score++;
 			console.log(usrPad.score);
 			resetScreen();
-			console.log("d");
+			updateScores();
 		}
 	}
 
@@ -136,7 +159,7 @@ function Ball() {
 
 	this.show = function() {
 		fill(255);	//make white
-		ellipse(this.xPos, this.yPos, BALL_DIAM, BALL_DIAM)
+		ellipse((this.xPos + BALL_DIAM / 2), this.yPos, BALL_DIAM, BALL_DIAM);	//hack
 	}
 }
 
@@ -144,7 +167,11 @@ function Computer(pad) {
 	this.paddle = pad;
 
 	this.update = function() {
-		this.paddle.yPos = ball.yPos;
+		if (this.paddle.ypos >= CANVAS_HEIGHT - PADDLE_LENGTH) {
+			this.paddle.yPos = CANVAS_HEIGHT - PADDLE_LENGTH;
+		} else {
+			this.paddle.yPos = ball.yPos - PADDLE_LENGTH / 2;
+		}
 		this.paddle.yPos = constrain(this.paddle.yPos, 0, (height - BALL_DIAM));
 	}
 
