@@ -1,13 +1,13 @@
 const CANVAS_WIDTH = screen.width * 2 / 3;
 const CANVAS_HEIGHT = screen.height * 2 / 3;
-const PADDLE_LENGTH = CANVAS_HEIGHT / 6;
-const PADDLE_WIDTH = PADDLE_LENGTH / 7;
-const BALL_DIAM = 15;
+const PADDLE_LENGTH = CANVAS_HEIGHT / 5;
+const PADDLE_WIDTH = PADDLE_LENGTH / 6;
+const BALL_DIAM = PADDLE_LENGTH / 5;
+
 var usrPad;
 var compPad;
 var ball;
 var ai;
-
 var runGame = false;
 
 //TODO: add multiplayer.
@@ -19,6 +19,7 @@ function setup() {
 			<input type='button' value='Pause' onclick='pauseGame();' /> \
 			<h3 id='usr'>User: 0</h3> \
 			<h3 id='comp'>Computer: 0</h3> \
+			<p id='info'></p>\
 		</div> \
 	");
 	var cnv = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -48,6 +49,11 @@ function draw() {
 }
 
 function startGame() {
+	//these three lines added for end game purposes
+	document.getElementById('usr').innerHTML = "User: " + usrPad.score;
+	document.getElementById('comp').innerHTML = "Computer: " + compPad.score;
+	document.getElementById("info").innerHTML = "";
+	
 	runGame = true;
 }
 
@@ -57,7 +63,8 @@ function pauseGame() {
 }
 
 function drawPauseSymbol() {
-	rect((width/2 - PADDLE_WIDTH*3 - PADDLE_WIDTH), (height/2 - PADDLE_LENGTH), (PADDLE_WIDTH*2), (PADDLE_LENGTH*2));
+	fill(200);
+	rect((width/2 - PADDLE_WIDTH*3 - PADDLE_WIDTH*2), (height/2 - PADDLE_LENGTH), (PADDLE_WIDTH*2), (PADDLE_LENGTH*2));
 	rect((width/2 + PADDLE_WIDTH*3), (height/2 - PADDLE_LENGTH), (PADDLE_WIDTH*2), (PADDLE_LENGTH*2));
 }
 
@@ -86,6 +93,21 @@ function resetScreen() {
 function updateScores() {
 	document.getElementById('usr').innerHTML = "User: " + usrPad.score;
 	document.getElementById('comp').innerHTML = "Computer: " + compPad.score;
+	
+	if (usrPad.score == 3) {
+		document.getElementById("info").innerHTML = "User has won. Please press Start to restart.";
+		gameOver();
+	} else if (compPad.score == 3) {
+		document.getElementById("info").innerHTML = "Computer has won. Please press Start to restart.";
+		pauseGame();
+		gameOver();
+	}
+}
+
+function gameOver() {
+	usrPad.score = 0;
+	compPad.score = 0;
+	runGame = false;
 }
 
 function Paddle(x) {
@@ -109,7 +131,7 @@ function Paddle(x) {
 
 	this.update = function() {
 		this.yPos += this.speed;
-		this.yPos = constrain(this.yPos, 0, (height - PADDLE_LENGTH));
+		this.yPos = constrain(this.yPos, 0, (height - PADDLE_LENGTH - 1));
 	}
 
 	this.show = function() {
@@ -121,8 +143,8 @@ function Paddle(x) {
 function Ball() {
 	this.xPos = width/2;
 	this.yPos = height/2;
-	this.xSpeed = 3;
-	this.ySpeed = 3;
+	this.xSpeed = 8;
+	this.ySpeed = 6;
 	
 	this.changeSpeed = function(xVal, yVal) {
 		this.xSpeed = xVal;
@@ -172,7 +194,7 @@ function Computer(pad) {
 		} else {
 			this.paddle.yPos = ball.yPos - PADDLE_LENGTH / 2;
 		}
-		this.paddle.yPos = constrain(this.paddle.yPos, 0, (height - BALL_DIAM));
+		this.paddle.yPos = constrain(this.paddle.yPos, 0, (height - PADDLE_LENGTH - 1));
 	}
 
 	this.show = function() {
